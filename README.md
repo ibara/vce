@@ -102,6 +102,9 @@ Terminal size should be autodetected, at least on Unix.
 
 CP/M might be real slow on real hardware.
 
+CP/M garbles the display of the first few characters after
+typing your first keystroke.
+
 MS-DOS support is missing.
 
 The display ticks up one if you are the very bottom of a

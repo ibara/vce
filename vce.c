@@ -488,6 +488,7 @@ message(const char *msg)
 static void
 save_file(void)
 {
+	char *bp;
 	int fd, saveidx = idx;
 
 	if (filename == NULL) {
@@ -506,7 +507,25 @@ save_file(void)
 
 	movegap();
 
+#if defined(__unix__)
 	write(fd, egap, ebuf - egap);
+#elif defined(__cpm__)
+	bp = egap;
+	while (*bp != EOF) {
+		if (bp == ebuf)
+			break;
+
+		if (*bp == '\0')
+			break;
+
+		if (*bp == '\n')
+			write(fd, "\r\n", 2);
+		else
+			write(fd, bp, 1);
+
+		++bp;
+	}
+#endif
 
 	close(fd);
 
@@ -547,7 +566,7 @@ init_buf(void)
 int
 main(int argc, char *argv[])
 {
-	FILE *fp;
+	char *bp;
 	int ch, done = 0, fd;
 
 #ifdef __unix__
@@ -588,7 +607,24 @@ main(int argc, char *argv[])
 		if ((fd = open(filename, O_RDONLY)) == -1)
 			goto out;
 
+#if defined(__unix__)
 		gap += read(fd, buf, BUF);
+#elif defined(__cpm__)
+		bp = buf;
+		while (read(fd, &ch, 1) > 0) {
+			if (bp == ebuf)
+				break;
+
+			if (ch == EOF || ch == '\0')
+				break;
+
+			if (ch != '\r') {
+				*bp++ = ch;
+				++gap;
+			}
+		}
+#endif
+
 		if (gap < buf)
 			gap = buf;
 
