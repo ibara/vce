@@ -111,3 +111,5 @@ The display ticks up one if you are the very bottom of a
 file and begin writing. It would be nice to fix that.
 
 It's always possible that the rest counter is incorrect.
+
+No Unicode. Hopefully that can be accomplished.
