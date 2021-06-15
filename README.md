@@ -68,9 +68,10 @@ Controls
 * `^S`    : left
 * `^D`    : right
 * `^X`    : down
-* `Esc-L` : redraw screen
-* `Esc-S` : save
-* `Esc-Q` : quit (does not prompt saving)
+* `Esc-l` : redraw screen
+* `Esc-s` : save
+* `Esc-q` : quit (does not prompt saving)
+* `Esc-v` : display version number
 
 Arrow keys will also move the cursor on ANSI terminals.
 

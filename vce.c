@@ -674,11 +674,14 @@ out:
 				}
 				break;
 #endif
+			case 'q':
+				done = 1;
+				break;
 			case 's':
 				save_file();
 				break;
-			case 'q':
-				done = 1;
+			case 'v':
+				message("Version 0.8");
 			}
 			break;
 		default:
