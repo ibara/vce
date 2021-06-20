@@ -16,6 +16,9 @@ unix: ${OBJS}
 cpm:
 	ack -mcpm -O6 -DANSI -D__cpm__ -o vce.com vce.c
 
+msdos:
+	wcl -0 -ox -mt -DANSI -D__msdos__ vce.c
+
 install:
 	install -m 755 ${PROG} ${PREFIX}/bin
 

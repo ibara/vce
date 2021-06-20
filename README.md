@@ -73,7 +73,7 @@ Controls
 * `Esc-q` : quit (does not prompt saving)
 * `Esc-v` : display version number
 
-Arrow keys will also move the cursor on ANSI terminals.
+Arrow keys will also move the cursor on Unix terminals.
 
 You must press Enter after saving to continue working.
 
@@ -89,7 +89,7 @@ See `LICENSE` for a copy of the ISC license.
 
 Caveats
 -------
-ANSI terminals only (for now...).
+ANSI terminals and the MS-DOS console only (for now...).
 
 No automatic newline at EOF.
 
@@ -105,8 +105,6 @@ CP/M might be real slow on real hardware.
 
 CP/M garbles the display of the first few characters after
 typing your first keystroke.
-
-MS-DOS support is missing.
 
 The display ticks up one if you are the very bottom of a
 file and begin writing. It would be nice to fix that.

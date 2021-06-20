@@ -47,7 +47,10 @@
 #endif
 
 #ifdef __msdos__
-#define BUF (0xffff - 0x8000 - 1) /* How to do like CP/M? */
+#include <conio.h>
+
+#define BUF (0xffff - 0x8000 - 1)	/* How to do like CP/M? */
+#define fgetc(stdin) getch()		/* Don't wait for Return */
 #endif
 
 #ifdef ANSI
@@ -507,7 +510,7 @@ save_file(void)
 
 	movegap();
 
-#if defined(__unix__)
+#if defined(__unix__) || defined(__msdos__)
 	write(fd, egap, ebuf - egap);
 #elif defined(__cpm__)
 	bp = egap;
@@ -607,7 +610,7 @@ main(int argc, char *argv[])
 		if ((fd = open(filename, O_RDONLY)) == -1)
 			goto out;
 
-#if defined(__unix__)
+#if defined(__unix__) || defined(__msdos__)
 		gap += read(fd, buf, BUF);
 #elif defined(__cpm__)
 		bp = buf;
@@ -656,7 +659,7 @@ out:
 		case '\033': /* ESC */
 			ch = fgetc(stdin);
 			switch (ch) {
-#ifdef ANSI
+#if defined(ANSI) && !defined(__msdos__)
 			case '[': /* Arrow keys */
 				ch = fgetc(stdin);
 				switch(ch) {
@@ -681,7 +684,7 @@ out:
 				save_file();
 				break;
 			case 'v':
-				message("Version 0.8");
+				message("Version 0.9");
 			}
 			break;
 		default:
@@ -697,7 +700,7 @@ out:
 #endif
 
 #ifdef ANSI
-#ifdef __cpm__
+#if defined(__cpm__) || defined(__msdos__)
 	write(1, "\033[12l", 5);
 #endif
 	write(1, "\033[H\033[2J\033[H", 10);
