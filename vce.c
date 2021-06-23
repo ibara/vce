@@ -242,8 +242,27 @@ insert(int ch)
 	idx = pos(egap);
 }
 
+static unsigned int
+get_linecolno(void)
+{
+	int i = 0;
+	unsigned int colno = 0;
+
+	line = 1;
+	while (i < idx) {
+		if (buf[i++] == '\n') {
+			++line;
+			colno = 0;
+		} else {
+			++colno;
+		}
+	}
+
+	return colno;
+}
+
 static void
-update_modeline(void)
+update_modeline(unsigned int colno)
 {
 	unsigned int i, rest;
 
@@ -265,7 +284,7 @@ update_modeline(void)
 			while (i < 35)
 				i += strdcat(modeline, " ", 1);
 			i += strdcat(modeline, "C: ", 3);
-			i += strdcat(modeline, putn(col), strlen(putn(col)));
+			i += strdcat(modeline, putn(colno), strlen(putn(colno)));
 
 			if (COL_MAX > 64) {
 				while (i < COL_MAX - 13)
@@ -302,18 +321,6 @@ update_modeline(void)
 
 	while (i < COL_MAX)
 		i += strdcat(modeline, " ", 1);
-}
-
-static void
-get_lineno(void)
-{
-	int i = 0;
-
-	line = 1;
-	while (i < idx) {
-		if (buf[i++] == '\n')
-			++line;
-	}
 }
 
 static void
@@ -367,8 +374,7 @@ update_display(void)
 		++epage;
 	}
 
-	get_lineno();
-	update_modeline();
+	update_modeline(get_linecolno());
 
 #ifdef ANSI
 	write(1, "\033[2J\033[H\033[7m", 11);
