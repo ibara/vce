@@ -59,7 +59,7 @@
 #endif
 
 #ifndef ROW_MAX
-#define ROW_MAX 24	/* 23, if using tmux(1) */
+#define ROW_MAX 23	/* 23, if using tmux(1) */
 #endif
 #endif
 
@@ -69,10 +69,10 @@
  * vce - Visual Code Editor
  */
 
-static char *buf, *ebuf, *filename;
+static char *buf, *ebuf;
 static char *gap, *egap;
 static char modeline[COL_MAX], screen[ROW_MAX - 1][COL_MAX];
-static char name[COL_MAX - 5];
+static char filename[COL_MAX - 5], response[COL_MAX - 5];
 
 static int col, row = 1, line = 1;
 static int idx, page, epage;
@@ -271,7 +271,7 @@ update_modeline(unsigned int colno)
 
 	i = strdcpy(modeline, "VCE: ");
 
-	if (filename != NULL)
+	if (filename[0] != '\0')
 		i += strdcat(modeline, filename, COL_MAX > 21 ? 16 : 11);
 
 	if (COL_MAX > 34) {
@@ -397,12 +397,12 @@ update_display(void)
 }
 
 static char *
-get_name(void)
+get_response(void)
 {
 	int ch, i, j = 0;
 
-	for (i = 0; i < sizeof(name); i++)
-		name[i] = '\0';
+	for (i = 0; i < sizeof(response); i++)
+		response[i] = '\0';
 
 	for (i = 0; i < COL_MAX; i++)
 		modeline[i] = '\0';
@@ -430,10 +430,10 @@ get_name(void)
 			write(1, "\033[H", 3);
 			write(1, modeline, sizeof(modeline));
 
-			name[--j] = '\0';
+			response[--j] = '\0';
 
 			write(1, "\033[1;6H", 6);
-			write(1, name, strlen(name));
+			write(1, response, strlen(response));
 		} else {
 			if (j == COL_MAX - 6)
 				continue;
@@ -450,10 +450,10 @@ get_name(void)
 			write(1, "\033[H", 3);
 			write(1, modeline, sizeof(modeline));
 
-			name[j++] = ch;
+			response[j++] = ch;
 
 			write(1, "\033[1;6H", 6);
-			write(1, name, strlen(name));
+			write(1, response, strlen(response));
 		}
 	}
 
@@ -466,7 +466,7 @@ get_name(void)
 	write(1, "H", 1);
 #endif
 
-	return (j == 0) ? NULL : name;
+	return (j == 0) ? NULL : response;
 }
 
 static void
@@ -498,14 +498,20 @@ static void
 save_file(void)
 {
 	char *bp;
-	int fd, saveidx = idx;
+	int fd, i, saveidx = idx;
 
-	if (filename == NULL) {
-		if ((filename = get_name()) == NULL) {
+	if (filename[0] == '\0') {
+		if (get_response() == NULL) {
 			message("no filename");
 			return;
 		}
 	}
+
+	for (i = 0; i < sizeof(filename); i++)
+		filename[i] = '\0';
+
+	for (i = 0; response[i] != '\0'; i++)
+		filename[i] = response[i];
 
 	if ((fd = open(filename, MFLAGS, 0644)) == -1) {
 		message("failed open");
@@ -545,6 +551,31 @@ save_file(void)
 	message("save ok");
 }
 
+static int
+getn(const char *str)
+{
+	int i = 0;
+
+	while (*str >= '0' && *str <= '9')
+		i = (i * 10) + (*str++ - '0');
+
+	return i;
+}
+
+static void
+goto_line(void)
+{
+	char *str;
+	int i = 0, target = 0;
+
+	if ((str = get_response()) != NULL)
+		target = getn(str);
+
+	idx = 0;
+	while (++i < target)
+		idx = adjust(nextline(idx), 0);
+}
+
 static void
 init_buf(void)
 {
@@ -576,7 +607,7 @@ int
 main(int argc, char *argv[])
 {
 	char *bp;
-	int ch, done = 0, fd;
+	int ch, done = 0, fd, i;
 
 #ifdef __unix__
 	struct termios term_new, term_old;
@@ -611,7 +642,9 @@ main(int argc, char *argv[])
 #endif
 
 	if (argc == 2) {
-		filename = argv[1];
+		for (i = 0; i < strlen(argv[1]); i++)
+			filename[i] = argv[1][i];
+		filename[i] = '\0';
 
 		if ((fd = open(filename, O_RDONLY)) == -1)
 			goto out;
@@ -683,6 +716,9 @@ out:
 				}
 				break;
 #endif
+			case 'g':
+				goto_line();
+				break;
 			case 'q':
 				done = 1;
 				break;

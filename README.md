@@ -68,6 +68,7 @@ Controls
 * `^S`    : left
 * `^D`    : right
 * `^X`    : down
+* `Esc-g` : goto line
 * `Esc-l` : redraw screen
 * `Esc-s` : save
 * `Esc-q` : quit (does not prompt saving)
